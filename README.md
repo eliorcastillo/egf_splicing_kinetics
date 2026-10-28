@@ -31,3 +31,9 @@ MCF10A cells stimulated with EGF, bulk RNA-seq time course.
 9. PSI and ΔPSI (rMATS)
 10. PSI × expression integration (phase 1)
 11. Exon-intron split analysis, EISA (phase 2)
+
+## Reference
+
+- Genome: GRCh38.p14 primary assembly (GENCODE release 50)
+- Annotation: gencode.v50.primary_assembly.annotation.gtf (comprehensive)
+- HISAT2 index built from the genome only; known splice sites (698,580) extracted from the GTF and supplied at alignment time.
