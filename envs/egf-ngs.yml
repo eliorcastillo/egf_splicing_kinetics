@@ -6,6 +6,7 @@ channels:
   - nodefaults
 dependencies:
   - sra-tools=3.4.1   # FASTQ download from SRA (step 3)
+  - pigz=2.8          # parallel gzip compression (step 3)
   - fastqc=0.13.0     # per-sample read quality (step 4)
   - multiqc=1.35      # aggregated QC report (step 4)
   - hisat2=2.2.3      # splice-aware alignment (steps 5-6)

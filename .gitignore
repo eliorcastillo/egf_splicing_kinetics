@@ -7,3 +7,4 @@ results/bam/
 *.bam
 *.bai
 .DS_Store
+results/logs/
