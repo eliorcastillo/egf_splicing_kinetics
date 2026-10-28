@@ -1,0 +1,8 @@
+# rMATS in its own environment to avoid Python dependency conflicts
+name: egf-rmats
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - rmats=4.4.0       # PSI and delta-PSI (step 9)

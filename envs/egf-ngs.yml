@@ -1,0 +1,13 @@
+# General NGS tools for the EGF splicing kinetics project
+name: egf-ngs
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - sra-tools=3.4.1   # FASTQ download from SRA (step 3)
+  - fastqc=0.13.0     # per-sample read quality (step 4)
+  - multiqc=1.35      # aggregated QC report (step 4)
+  - hisat2=2.2.3      # splice-aware alignment (steps 5-6)
+  - samtools=1.24     # BAM sorting, indexing, stats (step 6)
+  - subread=2.1.1     # featureCounts (steps 7 and 11)
