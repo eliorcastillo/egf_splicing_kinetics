@@ -1,0 +1,9 @@
+data/
+results/bam/
+*.fastq
+*.fastq.gz
+*.sra
+*.sam
+*.bam
+*.bai
+.DS_Store
