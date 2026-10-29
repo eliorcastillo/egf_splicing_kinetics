@@ -37,3 +37,9 @@ MCF10A cells stimulated with EGF, bulk RNA-seq time course.
 - Genome: GRCh38.p14 primary assembly (GENCODE release 50)
 - Annotation: gencode.v50.primary_assembly.annotation.gtf (comprehensive)
 - HISAT2 index built from the genome only; known splice sites (698,580) extracted from the GTF and supplied at alignment time.
+
+## Library type
+
+- Single-end, unstranded. Verified on SRR2061414 with featureCounts:
+  Assigned -s 1 = 14,660,453 vs -s 2 = 14,692,104 (~50/50).
+- Use featureCounts -s 0 and rMATS --libType fr-unstranded.
