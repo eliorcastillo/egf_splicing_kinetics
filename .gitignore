@@ -8,3 +8,7 @@ results/bam/
 *.bai
 .DS_Store
 results/logs/
+
+# Large or regenerable results
+results/bam/
+results/qc/fastqc/
