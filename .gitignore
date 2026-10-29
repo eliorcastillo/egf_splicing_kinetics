@@ -12,3 +12,5 @@ results/logs/
 # Large or regenerable results
 results/bam/
 results/qc/fastqc/
+.Rproj.user
+results/counts/
