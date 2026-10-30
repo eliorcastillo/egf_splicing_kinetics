@@ -14,3 +14,4 @@ results/bam/
 results/qc/fastqc/
 .Rproj.user
 results/counts/
+results/deseq2/
