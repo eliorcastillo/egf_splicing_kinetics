@@ -48,13 +48,104 @@ ggplot(pca, aes(PC1, PC2, color = time, shape = replicate)) +
   theme_bw()
 
 
-
-
-
-
-
 # PCA notes (2026-10-29):
 # - PC1 (64%) + PC2 (19%) trace a time arc: t000/t015 -> t040 -> t090 -> t180 -> t300.
 # - Replicate 2 is shifted left (earlier) at every time point, across two lanes:
 #   replicate effect, not lane. Use design ~ replicate + time.
 # - SRR2061418 (lower assignment rate) is not an outlier.
+
+
+
+# ===========================================================================
+# Part 2: differential expression, design ~ replicate + time
+# ===========================================================================
+
+# --- 5. Fit the model -------------------------------------------------------
+dds$time <- relevel(dds$time, ref = "t000")
+design(dds) <- ~ replicate + time
+
+dds <- DESeq(dds)
+resultsNames(dds)
+
+
+# --- 6. One contrast by hand: t040 vs t000 ----------------------------------
+res40 <- results(dds, contrast = c("time", "t040", "t000"), alpha = 0.05)
+summary(res40)
+
+res40$gene_name <- gene_info$gene_name[match(rownames(res40), gene_info$Geneid)]
+res40 <- res40[order(res40$padj), ]
+head(as.data.frame(res40), 10)
+
+# --- 7. Sanity check: known EGF-responsive genes ---------------------------
+as.data.frame(res40)[res40$gene_name %in% c("FOS", "EGR1", "MYC", "SRSF3", "GAPDH"),
+                     c("gene_name", "baseMean", "log2FoldChange", "padj")]
+
+
+
+# --- 8. Time profiles of immediate-early genes ------------------------------
+plot_gene <- function(gene_symbol) {
+  id <- gene_info$Geneid[gene_info$gene_name == gene_symbol][1]
+  d  <- plotCounts(dds, gene = id, intgroup = c("time", "replicate"),
+                   returnData = TRUE)
+  ggplot(d, aes(time, count, color = replicate, group = replicate)) +
+    geom_point(size = 3) + geom_line() +
+    scale_y_log10() +
+    labs(title = gene_symbol, y = "Normalized counts (log scale)") +
+    theme_bw()
+}
+
+plot_gene("FOS")
+plot_gene("EGR1")
+
+
+# IEG notes (2026-10-30):
+# - FOS and EGR1 are already high at t000 (~10x above t180/t300) in all 3 replicates.
+# - Methods: after 18 h starvation, cells were pre-incubated 20 min with DMSO
+#   before EGF. t000 = 20 min after handling -> IEG peak from handling, not EGF.
+# - t000 is NOT a baseline for IEGs (contrasts vs t000 underestimate or invert them),
+#   nor steady state for kinetic modelling of these genes. Likely fine for slower genes.
+
+
+# --- 9. LRT: genes changing at any time point --------------------------------
+dds_lrt <- DESeq(dds, test = "LRT", reduced = ~ replicate)
+res_lrt <- results(dds_lrt, alpha = 0.05)
+summary(res_lrt)
+
+res_lrt$gene_name <- gene_info$gene_name[match(rownames(res_lrt), gene_info$Geneid)]
+res_lrt <- res_lrt[order(res_lrt$padj), ]
+
+head(as.data.frame(res_lrt)[, c("gene_name", "baseMean", "padj")], 15)
+as.data.frame(res_lrt)[res_lrt$gene_name %in% c("FOS", "EGR1", "MYC", "SRSF3", "GAPDH"),
+                       c("gene_name", "baseMean", "padj")]
+
+
+
+# --- 10. Effect size: amplitude across the time course ----------------------
+norm_log <- log2(counts(dds, normalized = TRUE) + 1)
+
+time_means <- sapply(levels(dds$time), function(t)
+  rowMeans(norm_log[, dds$time == t]))
+
+amplitude <- apply(time_means, 1, max) - apply(time_means, 1, min)
+
+res_lrt$amplitude <- amplitude[rownames(res_lrt)]
+
+sig_strong <- res_lrt[which(res_lrt$padj < 0.05 & res_lrt$amplitude >= 1), ]
+nrow(sig_strong)
+
+as.data.frame(res_lrt)[res_lrt$gene_name %in% c("FOS", "EGR1", "MYC", "SRSF3", "GAPDH"),
+                       c("gene_name", "padj", "amplitude")]
+
+
+
+# --- 11. Save results ----------------------------------------------------------
+dir.create("results/deseq2", showWarnings = FALSE, recursive = TRUE)
+
+write.csv(as.data.frame(res_lrt), "results/deseq2/lrt_time_results.csv")
+
+time_means_df <- data.frame(gene_name = gene_info$gene_name[match(rownames(time_means), gene_info$Geneid)],
+                            time_means, check.names = FALSE)
+write.csv(time_means_df, "results/deseq2/time_means_log2.csv")
+
+saveRDS(dds,     "results/deseq2/dds_wald.rds")
+saveRDS(dds_lrt, "results/deseq2/dds_lrt.rds")
