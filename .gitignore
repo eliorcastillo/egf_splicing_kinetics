@@ -15,3 +15,4 @@ results/qc/fastqc/
 .Rproj.user
 results/counts/
 results/deseq2/
+results/rmats/
