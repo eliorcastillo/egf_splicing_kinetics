@@ -149,3 +149,42 @@ write.csv(time_means_df, "results/deseq2/time_means_log2.csv")
 
 saveRDS(dds,     "results/deseq2/dds_wald.rds")
 saveRDS(dds_lrt, "results/deseq2/dds_lrt.rds")
+
+
+
+
+
+dds     <- readRDS("results/deseq2/dds_wald.rds")
+res_lrt <- read.csv("results/deseq2/lrt_time_results.csv", row.names = 1)
+nrow(res_lrt[which(res_lrt$padj < 0.05 & res_lrt$amplitude >= 1), ])
+res_lrt[res_lrt$gene_name %in% c("FOS", "EGR1", "MYC", "SRSF3", "GAPDH"), c("gene_name", "padj", "amplitude")]
+
+
+
+
+#-----------------------------------------#
+
+lrt <- read.csv("results/deseq2/lrt_time_results.csv", row.names = 1)
+tm  <- read.csv("results/deseq2/time_means_log2.csv",  row.names = 1, check.names = FALSE)
+
+# 1. ¿Cambia y cuánto?
+lrt[lrt$gene_name == "SRSF3", c("gene_name", "baseMean", "padj", "amplitude")]
+
+# 2. Su expresión en cada tiempo (log2)
+tm[tm$gene_name == "SRSF3", ]
+
+
+library(DESeq2); library(ggplot2)
+dds <- readRDS("results/deseq2/dds_wald.rds")
+gene_info <- read.delim("results/counts/gene_counts.txt", comment.char = "#",
+                        check.names = FALSE)[, c("Geneid", "gene_name")]
+
+plot_gene <- function(gene_symbol) {
+  id <- gene_info$Geneid[gene_info$gene_name == gene_symbol][1]
+  d  <- plotCounts(dds, gene = id, intgroup = c("time", "replicate"), returnData = TRUE)
+  ggplot(d, aes(time, count, color = replicate, group = replicate)) +
+    geom_point(size = 3) + geom_line() + scale_y_log10() +
+    labs(title = gene_symbol, y = "Normalized counts (log scale)") + theme_bw()
+}
+plot_gene("SRSF3")
+
