@@ -16,3 +16,4 @@ results/qc/fastqc/
 results/counts/
 results/deseq2/
 results/rmats/
+results/qc/multiqc_report_data/
